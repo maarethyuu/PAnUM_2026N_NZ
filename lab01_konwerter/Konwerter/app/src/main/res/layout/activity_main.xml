@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="konwerter"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/arabicNumber"
+        android:hint="wpisz tutaj"
+        android:textSize="30sp"
+        android:gravity="center"
+        android:focusable="false"
+        android:layout_marginBottom="20dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button1"
+                android:text="1" />
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button2"
+                android:text="2" />
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button3"
+                android:text="3" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button4"
+                android:text="4" />
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button5"
+                android:text="5" />
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button6"
+                android:text="6" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button7"
+                android:text="7" />
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button8"
+                android:text="8" />
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button9"
+                android:text="9" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/buttonClear"
+                android:text="C" />
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/button0"
+                android:text="0" />
+            <Button
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/buttonDelete"
+                android:text="del" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonConverter"
+        android:layout_marginTop="20dp"
+        android:text="zamień na rzymskie" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/result"
+        android:layout_marginTop="30dp"
+        android:text="..."
+        android:textSize="36sp"
+        android:textStyle="bold" />
+
+</LinearLayout>
