@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Konwerter jednostek</string>
+
+    <string-array name="conversion_types">
+        <item>złotówki na euro (PLN > EUR)</item>
+        <item>centymetry na cale (cm > in)</item>
+        <item>celsjusze na fahrenheity (°C -> °F)</item>
+        <item>kilometry na mile (km > mi)</item>
+    </string-array>
+</resources>

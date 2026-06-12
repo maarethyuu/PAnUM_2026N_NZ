@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Kafeteria</string>
+    <string name="logo_description">Logo Kafeterii</string>
+
+    <string-array name="options">
+        <item>Napoje</item>
+        <item>Przekąski</item>
+        <item>Nasze lokale</item>
+        <item>Moje zamówienie</item>
+    </string-array>
+</resources>
