@@ -1,7 +1,7 @@
 package com.app.kafeteria;
 
 import android.content.ContentValues;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,15 +9,14 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Locale;
 
@@ -25,7 +24,7 @@ public class CartActivity extends AppCompatActivity {
 
     private SQLiteDatabase db;
     private Cursor cursor;
-    private SimpleCursorAdapter listAdapter;
+    private CartCursorAdapter listAdapter;
     private ListView cartList;
     private TextView totalPriceText;
 
@@ -42,13 +41,6 @@ public class CartActivity extends AppCompatActivity {
             db = coffeinaDatabaseHelper.getWritableDatabase();
 
             refreshCart();
-
-            cartList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                    showEditDialog(id);
-                }
-            });
 
             Button btnEmail = findViewById(R.id.btn_send_email);
             btnEmail.setOnClickListener(new View.OnClickListener() {
@@ -72,31 +64,7 @@ public class CartActivity extends AppCompatActivity {
                 new String[]{"_id", "PRODUCT_NAME", "PRICE", "QUANTITY"},
                 null, null, null, null, null);
 
-        listAdapter = new SimpleCursorAdapter(this,
-                R.layout.cart_item,
-                cursor,
-                new String[]{"PRODUCT_NAME", "QUANTITY", "PRICE"},
-                new int[]{R.id.cart_product_name, R.id.cart_product_quantity, R.id.cart_product_price},
-                0);
-
-        listAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            @Override
-            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                if (view.getId() == R.id.cart_product_quantity) {
-                    int qty = cursor.getInt(columnIndex);
-                    ((TextView) view).setText("Ilość: " + qty);
-                    return true;
-                }
-                if (view.getId() == R.id.cart_product_price) {
-                    double price = cursor.getDouble(columnIndex);
-                    int qty = cursor.getInt(cursor.getColumnIndexOrThrow("QUANTITY"));
-                    ((TextView) view).setText(String.format(Locale.getDefault(), "Cena: %.2f zł", price * qty));
-                    return true;
-                }
-                return false;
-            }
-        });
-
+        listAdapter = new CartCursorAdapter(this, cursor, 0);
         cartList.setAdapter(listAdapter);
         updateTotalPrice();
     }
@@ -109,55 +77,6 @@ public class CartActivity extends AppCompatActivity {
         }
         sumCursor.close();
         totalPriceText.setText(String.format(Locale.getDefault(), "Suma: %.2f zł", sum));
-    }
-
-    private void showEditDialog(final long itemId) {
-        Cursor itemCursor = db.query("CART",
-                new String[]{"PRODUCT_NAME", "QUANTITY"},
-                "_id = ?",
-                new String[]{Long.toString(itemId)},
-                null, null, null);
-
-        if (itemCursor.moveToFirst()) {
-            String name = itemCursor.getString(0);
-            int currentQty = itemCursor.getInt(1);
-            itemCursor.close();
-
-            final EditText input = new EditText(this);
-            input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-            input.setText(String.valueOf(currentQty));
-            input.setSelection(input.getText().length());
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Edytuj produkt: " + name);
-            builder.setView(input);
-
-            builder.setPositiveButton("Zapisz", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    String val = input.getText().toString();
-                    if (val.isEmpty() || Integer.parseInt(val) <= 0) {
-                        db.delete("CART", "_id = ?", new String[]{Long.toString(itemId)});
-                    } else {
-                        ContentValues values = new ContentValues();
-                        values.put("QUANTITY", Integer.parseInt(val));
-                        db.update("CART", values, "_id = ?", new String[]{Long.toString(itemId)});
-                    }
-                    refreshCart();
-                }
-            });
-
-            builder.setNegativeButton("Usuń z koszyka", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    db.delete("CART", "_id = ?", new String[]{Long.toString(itemId)});
-                    refreshCart();
-                }
-            });
-
-            builder.setNeutralButton("Anuluj", null);
-            builder.show();
-        }
     }
 
     private void sendOrderEmail() {
@@ -208,6 +127,60 @@ public class CartActivity extends AppCompatActivity {
         }
         if (db != null) {
             db.close();
+        }
+    }
+
+    private class CartCursorAdapter extends CursorAdapter {
+
+        public CartCursorAdapter(Context context, Cursor c, int flags) {
+            super(context, c, flags);
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            return LayoutInflater.from(context).inflate(R.layout.cart_item, parent, false);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            final long itemId = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+            final String name = cursor.getString(cursor.getColumnIndexOrThrow("PRODUCT_NAME"));
+            final double price = cursor.getDouble(cursor.getColumnIndexOrThrow("PRICE"));
+            final int qty = cursor.getInt(cursor.getColumnIndexOrThrow("QUANTITY"));
+
+            TextView nameView = view.findViewById(R.id.cart_product_name);
+            TextView priceView = view.findViewById(R.id.cart_product_price);
+            TextView qtyView = view.findViewById(R.id.cart_product_quantity);
+            Button btnPlus = view.findViewById(R.id.btn_plus);
+            Button btnMinus = view.findViewById(R.id.btn_minus);
+
+            nameView.setText(name);
+            qtyView.setText(String.valueOf(qty));
+            priceView.setText(String.format(Locale.getDefault(), "Cena: %.2f zł", price * qty));
+
+            btnPlus.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ContentValues values = new ContentValues();
+                    values.put("QUANTITY", qty + 1);
+                    db.update("CART", values, "_id = ?", new String[]{Long.toString(itemId)});
+                    refreshCart();
+                }
+            });
+
+            btnMinus.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (qty > 1) {
+                        ContentValues values = new ContentValues();
+                        values.put("QUANTITY", qty - 1);
+                        db.update("CART", values, "_id = ?", new String[]{Long.toString(itemId)});
+                    } else {
+                        db.delete("CART", "_id = ?", new String[]{Long.toString(itemId)});
+                    }
+                    refreshCart();
+                }
+            });
         }
     }
 }

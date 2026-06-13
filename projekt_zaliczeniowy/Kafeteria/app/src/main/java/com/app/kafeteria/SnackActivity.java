@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +21,7 @@ public class SnackActivity extends AppCompatActivity {
     private Cursor cursor;
     private String nameText;
     private double priceVal;
+    private int quantityVal = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,22 +66,32 @@ public class SnackActivity extends AppCompatActivity {
             Toast.makeText(this, "Baza danych jest niedostępna", Toast.LENGTH_SHORT).show();
         }
 
+        final TextView qtyText = findViewById(R.id.quantity);
+        Button btnMinus = findViewById(R.id.btn_qty_minus);
+        Button btnPlus = findViewById(R.id.btn_qty_plus);
+
+        btnPlus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                quantityVal++;
+                qtyText.setText(String.valueOf(quantityVal));
+            }
+        });
+
+        btnMinus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (quantityVal > 1) {
+                    quantityVal--;
+                    qtyText.setText(String.valueOf(quantityVal));
+                }
+            }
+        });
+
         Button btnAdd = findViewById(R.id.btn_add_to_order);
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText qtyInput = findViewById(R.id.quantity);
-                String qtyStr = qtyInput.getText().toString();
-                if (qtyStr.isEmpty()) {
-                    Toast.makeText(SnackActivity.this, "Wpisz poprawną ilość", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                int qty = Integer.parseInt(qtyStr);
-                if (qty <= 0) {
-                    Toast.makeText(SnackActivity.this, "Ilość musi być większa od 0", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
                 try {
                     Cursor checkCursor = db.query("CART",
                             new String[]{"_id", "QUANTITY"},
@@ -93,13 +103,13 @@ public class SnackActivity extends AppCompatActivity {
                         int existingId = checkCursor.getInt(0);
                         int existingQty = checkCursor.getInt(1);
                         ContentValues updateValues = new ContentValues();
-                        updateValues.put("QUANTITY", existingQty + qty);
+                        updateValues.put("QUANTITY", existingQty + quantityVal);
                         db.update("CART", updateValues, "_id = ?", new String[]{Integer.toString(existingId)});
                     } else {
                         ContentValues cartValues = new ContentValues();
                         cartValues.put("PRODUCT_NAME", nameText);
                         cartValues.put("PRICE", priceVal);
-                        cartValues.put("QUANTITY", qty);
+                        cartValues.put("QUANTITY", quantityVal);
                         db.insert("CART", null, cartValues);
                     }
                     checkCursor.close();
